@@ -1,0 +1,22 @@
+\set ECHO none
+psql:sql/bignum.sql:14: NOTICE:  return type bignum is only a shell
+psql:sql/bignum.sql:19: NOTICE:  argument type bignum is only a shell
+SELECT bignum('0'), bignum('1'), bignum('-1');
+ bignum | bignum | bignum 
+--------+--------+--------
+ 0      | 1      | -1
+(1 row)
+
+SELECT 0::bignum, 1::bignum, (-1)::bignum;
+ bignum | bignum | bignum 
+--------+--------+--------
+ 0      | 1      | -1
+(1 row)
+
+SELECT (1::int8)::bignum, (-1::int8)::bignum;
+ bignum | bignum 
+--------+--------
+ 1      | -1
+(1 row)
+
+ROLLBACK;

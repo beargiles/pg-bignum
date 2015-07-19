@@ -1,0 +1,31 @@
+{
+    "name": "bignum",
+    "abstract": "Unlimited precision integers",
+    "description": "Unlimited precision integers provided by the OpenSSL library",
+    "version": "0.0.1",
+    "maintainer": "Bear Giles <bgiles@coyotesong.com>"
+    "license": "postgresql",
+    "provides": {
+        "bignum": {
+            "abstract": "Unlimited precision integers",
+            "file": "sql/bignum.sql",
+            "docfile": "doc/bignum.md",
+            "version": "0.0.1"
+        }
+    },
+    "release_status": "unstable",
+    "resources": {
+        "repository": {
+          "url":  "https://github.com/beargiles/pg-bignum.git",
+          "web":  "https://github.com/beargiles/pg-bignum",
+          "type": "git"
+        }
+    },
+
+    "generated_by": "Bear Giles <bgiles@coyotesong.com>"
+
+    "meta-spec": {
+        "version": "1.0.0",
+        "url": "http://pgxn.org/meta/spec.txt"
+    }
+}
