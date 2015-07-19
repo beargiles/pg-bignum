@@ -3,7 +3,7 @@
     "abstract": "Unlimited precision integers",
     "description": "Unlimited precision integers provided by the OpenSSL library",
     "version": "0.8.0",
-    "maintainer": "Bear Giles <bgiles@coyotesong.com>"
+    "maintainer": "Bear Giles <bgiles@coyotesong.com>",
     "license": "postgresql",
     "provides": {
         "bignum": {
@@ -22,10 +22,20 @@
         }
     },
 
-    "generated_by": "Bear Giles <bgiles@coyotesong.com>"
+    "generated_by": "Bear Giles <bgiles@coyotesong.com>",
 
     "meta-spec": {
         "version": "1.0.0",
         "url": "http://pgxn.org/meta/spec.txt"
-    }
+    },
+    
+    "tags": [
+       "math",
+       "unlimited length integer",
+       "arbitary length integer",
+       "multiple precision integer",
+       "user-defined type",
+       "UDT",
+       "OpenSSL"
+    ]   
 }
