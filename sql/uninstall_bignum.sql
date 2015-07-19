@@ -1,0 +1,1 @@
+DROP TYPE bignum CASCADE;
