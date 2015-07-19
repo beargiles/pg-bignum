@@ -1,8 +1,25 @@
-/*
- * Author: Bear Giles <bgiles@coyotesong.com>
- * Created at: 2015-07-18 18:03:42 -0600
- */
-
+--
+-- This file is released under the PostgreSQL license by its author,
+-- Bear Giles <bgiles@coyotesong.com>
+--
+-- -------------------------------------------------------------------------------
+--
+-- Definition of BIGNUM user-defined type for unlimited precision extensions.
+-- 
+-- This extension is one of several interacting extensions built upon the OpenSSL
+-- library but does not include any cryptographic functionality. The OpenSSL library
+-- will usually be installed by default with PostgreSQL, local laws permitting.
+--
+-- This extension is not compatible the existing DECIMAL, NUMERIC, or other
+-- unlimited precision integer extensions at this time.
+--
+-- If you're interested in Galois fields please write me. I've done some preliminary
+-- work based upon this extension but it is not ready for publication.
+--
+-- Author: Bear Giles <bgiles@coyotesong.com>
+-- Created at: 2015-07-18 18:03:42 -0600
+--
+-- -------------------------------------------------------------------------------
 --
 -- create type
 --
@@ -285,6 +302,10 @@ CREATE OPERATOR - (
    PROCEDURE = bn_negate
 );
 
+CREATE OR REPLACE FUNCTION abs(bignum) RETURNS bignum
+AS 'bignum', 'pgx_bignum_abs'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE OR REPLACE FUNCTION bn_add(bignum, bignum) RETURNS bignum
 AS 'bignum', 'pgx_bignum_add'
 LANGUAGE C IMMUTABLE STRICT;
@@ -345,21 +366,6 @@ CREATE OR REPLACE FUNCTION bn_modulus_i8(int8, bignum) RETURNS bignum
 AS 'bignum', 'pgx_bignum_modulus_i8b'
 LANGUAGE C IMMUTABLE STRICT;
 
-CREATE OR REPLACE FUNCTION bn_gcd(bignum, bignum) RETURNS bignum
-AS 'bignum', 'pgx_bignum_gcd'
-LANGUAGE C IMMUTABLE STRICT;
-
-CREATE OR REPLACE FUNCTION bn_gcd_i8(bignum, int8) RETURNS bignum
-AS 'bignum', 'pgx_bignum_gcd_i8'
-LANGUAGE C IMMUTABLE STRICT;
-
-CREATE OR REPLACE FUNCTION bn_gcd_i8(int8, bignum) RETURNS bignum AS $$
-   SELECT bn_gcd_i8($2, $1);
-$$ LANGUAGE SQL IMMUTABLE STRICT;
-
-CREATE OR REPLACE FUNCTION bn_gcd_ii(int8, int8) RETURNS bignum
-AS 'bignum', 'pgx_bignum_gcd_ii'
-LANGUAGE C IMMUTABLE STRICT;
 
 CREATE OPERATOR + (
    LEFTARG = bignum,
@@ -457,32 +463,23 @@ CREATE OPERATOR % (
    PROCEDURE = bn_modulus_i8
 );
 
-CREATE OPERATOR | (
-   LEFTARG = bignum,
-   RIGHTARG = bignum,
-   PROCEDURE = bn_gcd
-);
+--
+-- Greatest common denominator.
+--
+CREATE OR REPLACE FUNCTION gcd(bignum, bignum) RETURNS bignum
+AS 'bignum', 'pgx_bignum_gcd'
+LANGUAGE C IMMUTABLE STRICT;
 
-CREATE OPERATOR | (
-   LEFTARG = bignum,
-   RIGHTARG = int8,
-   PROCEDURE = bn_gcd_i8
-);
+CREATE OR REPLACE FUNCTION gcd(bignum, int8) RETURNS bignum
+AS 'bignum', 'pgx_bignum_gcd_i8'
+LANGUAGE C IMMUTABLE STRICT;
 
-CREATE OPERATOR | (
-   LEFTARG = int8,
-   RIGHTARG = bignum,
-   PROCEDURE = bn_gcd_i8
-);
+CREATE OR REPLACE FUNCTION gcd(int8, bignum) RETURNS bignum AS $$
+   SELECT gcd($2, $1);
+$$ LANGUAGE SQL IMMUTABLE STRICT;
 
-CREATE OPERATOR | (
-   LEFTARG = int8,
-   RIGHTARG = int8,
-   PROCEDURE = bn_gcd_ii
-);
-
-CREATE OR REPLACE FUNCTION bn_abs(bignum) RETURNS bool
-AS 'bignum', 'pgx_bignum_abs'
+CREATE OR REPLACE FUNCTION gcd(int8, int8) RETURNS bignum
+AS 'bignum', 'pgx_bignum_gcd_ii'
 LANGUAGE C IMMUTABLE STRICT;
 
 --

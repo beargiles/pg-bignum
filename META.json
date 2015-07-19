@@ -2,7 +2,7 @@
     "name": "bignum",
     "abstract": "Unlimited precision integers",
     "description": "Unlimited precision integers provided by the OpenSSL library",
-    "version": "0.0.1",
+    "version": "0.8.0",
     "maintainer": "Bear Giles <bgiles@coyotesong.com>"
     "license": "postgresql",
     "provides": {
@@ -13,7 +13,7 @@
             "version": "0.0.1"
         }
     },
-    "release_status": "unstable",
+    "release_status": "stable",
     "resources": {
         "repository": {
           "url":  "https://github.com/beargiles/pg-bignum.git",

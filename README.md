@@ -1,8 +1,9 @@
 bignum
 ======
 
-This is a user-defined type for unlimited precision integers. It is backed by the OpenSSL library so
-it should be available on most if not all PostgreSQL installations without the need for another library.
+This is a user-defined type for unlimited precision integers. It is 
+backed by the OpenSSL library so it should be available on most if 
+not all PostgreSQL installations without the need for another library.
 
 To build it, just do this:
 
@@ -72,6 +73,7 @@ so:
 
 Dependencies
 ------------
+
 The `bignum` data type depends on the OpenSSL library.
 
 Copyright and License

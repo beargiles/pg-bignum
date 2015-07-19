@@ -1,3 +1,7 @@
+/*
+ * This file is released under the PostgreSQL license by its author,
+ * Bear Giles <bgiles@coyotesong.com>
+ */
 #include <stdio.h>
 #include "postgres.h"
 #include "fmgr.h"
@@ -435,8 +439,13 @@ Datum pgx_bignum_divide(PG_FUNCTION_ARGS) {
         PG_RETURN_NULL();
     }
 
-    x = bytea_to_bignum(raw1);
     y = bytea_to_bignum(raw2);
+    if (BN_is_zero(y)) {
+        BN_free(y);
+        PG_RETURN_NULL();
+    }
+
+    x = bytea_to_bignum(raw1);
     BN_div(x, y, x, y, ctx);
 
     // write to binary format
@@ -463,6 +472,11 @@ Datum pgx_bignum_divide_bi8(PG_FUNCTION_ARGS) {
     }
 
     y = int8_to_bignum(PG_GETARG_INT64(1));
+    if (BN_is_zero(y)) {
+        BN_free(y);
+        PG_RETURN_NULL();
+    }
+
     x = bytea_to_bignum(raw1);
     BN_div(x, y, x, y, ctx); 
 
@@ -492,6 +506,11 @@ Datum pgx_bignum_divide_i8b(PG_FUNCTION_ARGS) {
     }
 
     y = bytea_to_bignum(raw1);
+    if (BN_is_zero(y)) {
+        BN_free(y);
+        PG_RETURN_NULL();
+    }
+
     BN_div(x, y, x, y, ctx); 
 
     // write to binary format
@@ -527,8 +546,13 @@ Datum pgx_bignum_modulus(PG_FUNCTION_ARGS) {
         PG_RETURN_NULL();
     }
 
-    x = bytea_to_bignum(raw1);
     y = bytea_to_bignum(raw2);
+    if (BN_is_zero(y)) {
+        BN_free(y);
+        PG_RETURN_NULL();
+    }
+
+    x = bytea_to_bignum(raw1);
     BN_div(x, y, x, y, ctx);
 
     // write to binary format
@@ -555,11 +579,16 @@ Datum pgx_bignum_modulus_bi8(PG_FUNCTION_ARGS) {
     }
 
     y = int8_to_bignum(PG_GETARG_INT64(1));
+    if (BN_is_zero(y)) {
+        BN_free(y);
+        PG_RETURN_NULL();
+    }
+
     x = bytea_to_bignum(raw1);
     BN_div(x, y, x, y, ctx); 
 
     // write to binary format
-    results = bignum_to_bytea(x);
+    results = bignum_to_bytea(y);
     BN_free(x);
     BN_free(y);
     BN_CTX_free(ctx);
@@ -584,10 +613,15 @@ Datum pgx_bignum_modulus_i8b(PG_FUNCTION_ARGS) {
     }
 
     y = bytea_to_bignum(raw1);
+    if (BN_is_zero(y)) {
+        BN_free(y);
+        PG_RETURN_NULL();
+    }
+
     BN_div(x, y, x, y, ctx); 
 
     // write to binary format
-    results = bignum_to_bytea(x);
+    results = bignum_to_bytea(y);
     BN_free(x);
     BN_free(y);
     BN_CTX_free(ctx);
@@ -619,8 +653,13 @@ Datum pgx_bignum_gcd(PG_FUNCTION_ARGS) {
         PG_RETURN_NULL();
     }
 
-    x = bytea_to_bignum(raw1);
     y = bytea_to_bignum(raw2);
+    if (BN_is_zero(y)) {
+        BN_free(y);
+        PG_RETURN_NULL();
+    }
+
+    x = bytea_to_bignum(raw1);
     BN_gcd(x, x, y, ctx);
 
     // write to binary format
@@ -647,6 +686,11 @@ Datum pgx_bignum_gcd_i8(PG_FUNCTION_ARGS) {
     }
 
     y = int8_to_bignum(PG_GETARG_INT64(1));
+    if (BN_is_zero(y)) {
+        BN_free(y);
+        PG_RETURN_NULL();
+    }
+
     x = bytea_to_bignum(raw1);
     BN_gcd(x, x, y, ctx); 
 
@@ -667,8 +711,13 @@ Datum pgx_bignum_gcd_ii(PG_FUNCTION_ARGS) {
     BIGNUM *x, *y;
     BN_CTX *ctx = BN_CTX_new();
 
-    x = int8_to_bignum(PG_GETARG_INT64(0));
     y = int8_to_bignum(PG_GETARG_INT64(1));
+    if (BN_is_zero(y)) {
+        BN_free(y);
+        PG_RETURN_NULL();
+    }
+
+    x = int8_to_bignum(PG_GETARG_INT64(0));
     BN_gcd(x, x, y, ctx); 
 
     // write to binary format

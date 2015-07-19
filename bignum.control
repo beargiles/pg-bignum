@@ -1,5 +1,5 @@
 # bignum extension
 comment = 'Unlimited precision integers'
-default_version = '0.0.1'
+default_version = '0.8.0'
 module_pathname = '$libdir/bignum'
 relocatable = true

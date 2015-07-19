@@ -1,3 +1,7 @@
+/*
+ * This file is released under the PostgreSQL license by its author,
+ * Bear Giles <bgiles@coyotesong.com>
+ */
 #ifndef bignum_h
 #define bignum_h
 

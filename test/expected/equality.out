@@ -1,10 +1,28 @@
 \set ECHO none
-psql:sql/bignum.sql:14: NOTICE:  return type bignum is only a shell
-psql:sql/bignum.sql:19: NOTICE:  argument type bignum is only a shell
+psql:sql/bignum.sql:31: NOTICE:  return type bignum is only a shell
+psql:sql/bignum.sql:36: NOTICE:  argument type bignum is only a shell
 \set d0 0::bignum
 \set d1 1::bignum
-\set d2 -1::bignum
-SELECT :d0 AS a, :d1 AS b, :d2 AS c;
+\set n1 -1::bignum
+SELECT :d0;
+ bignum 
+--------
+ 0
+(1 row)
+
+SELECT :d1;
+ bignum 
+--------
+ 1
+(1 row)
+
+SELECT :n1;
+ ?column? 
+----------
+ -1
+(1 row)
+
+SELECT :d0 AS a, :d1 AS b, :n1 AS c;
  a | b | c  
 ---+---+----
  0 | 1 | -1
@@ -34,7 +52,7 @@ SELECT :d0 < 1 AS a, :d0 <= 1 AS b, :d0 = 1 as c, :d0 >= 1 as d, :d0 > 1 as e, :
  t | t | f | f | f | t
 (1 row)
 
-SELECT :d2 < :d1 AS a, :d2 <= :d1 AS b, :d2 = :d1 as c, :d2 >= :d1 as d, :d2 > :d1 as e, :d2 <> :d1 as f;
+SELECT :n1 < :d1 AS a, :n1 <= :d1 AS b, :n1 = :d1 as c, :n1 >= :d1 as d, :n1 > :d1 as e, :n1 <> :d1 as f;
  a | b | c | d | e | f 
 ---+---+---+---+---+---
  t | t | f | f | f | t

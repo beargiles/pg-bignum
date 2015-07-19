@@ -1,0 +1,213 @@
+\set ECHO none
+psql:sql/bignum.sql:31: NOTICE:  return type bignum is only a shell
+psql:sql/bignum.sql:36: NOTICE:  argument type bignum is only a shell
+\set d0 0::bignum
+\set d1 1::bignum
+\set d2 2::bignum
+\set n1 -1::bignum
+\set n2 -2::bignum
+--
+-- test addition
+--
+SELECT :d0 + :d0 as a, :d0 + 0 as b, 0 + :d0 as c;
+ a | b | c 
+---+---+---
+ 0 | 0 | 0
+(1 row)
+
+SELECT :d1 + :d1 as a, :d1 + 1 as b, 1 + :d1 as c;
+ a | b | c 
+---+---+---
+ 2 | 2 | 2
+(1 row)
+
+SELECT :d1 + :d2 as a, :d1 + 2 as b, 1 + :d2 as c;
+ a | b | c 
+---+---+---
+ 3 | 3 | 3
+(1 row)
+
+SELECT :d1 + :n1 as a, :d1 + -1 as b, 1 + :n1 as c;
+ a | b | c 
+---+---+---
+ 0 | 0 | 0
+(1 row)
+
+SELECT :d1 + :n2 as a, :d1 + -2 as b, 1 + :n2 as c;
+ a  | b  | c  
+----+----+----
+ -1 | -1 | -1
+(1 row)
+
+--
+-- test subtraction
+--
+SELECT :d0 - :d0 as a, :d0 - 0 as b, 0 - :d0 as c;
+ a | b | c 
+---+---+---
+ 0 | 0 | 0
+(1 row)
+
+SELECT :d1 - :d1 as a, :d1 - 1 as b, 1 - :d1 as c;
+ a | b | c 
+---+---+---
+ 0 | 0 | 0
+(1 row)
+
+SELECT :d1 - :d2 as a, :d1 - 2 as b, 1 - :d2 as c;
+ a  | b  | c  
+----+----+----
+ -1 | -1 | -1
+(1 row)
+
+SELECT :d1 - :n1 as a, :d1 - -1 as b, 1 - :n1 as c;
+ a | b | c 
+---+---+---
+ 2 | 2 | 2
+(1 row)
+
+SELECT :d1 - :n2 as a, :d1 - -2 as b, 1 - :n2 as c;
+ a | b | c 
+---+---+---
+ 3 | 3 | 3
+(1 row)
+
+--
+-- test multiplication
+--
+SELECT :d0 * :d0 as a, :d0 * 0 as b, 0 * :d0 as c;
+ a | b | c 
+---+---+---
+ 0 | 0 | 0
+(1 row)
+
+SELECT :d1 * :d1 as a, :d1 * 1 as b, 1 * :d1 as c;
+ a | b | c 
+---+---+---
+ 1 | 1 | 1
+(1 row)
+
+SELECT :d1 * :d2 as a, :d1 * 2 as b, 1 * :d2 as c;
+ a | b | c 
+---+---+---
+ 2 | 2 | 2
+(1 row)
+
+SELECT :d1 * :n1 as a, :d1 * -1 as b, 1 * :n1 as c;
+ a  | b  | c  
+----+----+----
+ -1 | -1 | -1
+(1 row)
+
+SELECT :d1 * :n2 as a, :d1 * -2 as b, 1 * :n2 as c;
+ a  | b  | c  
+----+----+----
+ -2 | -2 | -2
+(1 row)
+
+--
+-- test division
+--
+SELECT :d0 / :d0 as a, :d0 / 0 as b, 0 / :d0 as c;
+ a | b | c 
+---+---+---
+   |   | 
+(1 row)
+
+SELECT :d1 / :d1 as a, :d1 / 1 as b, 1 / :d1 as c;
+ a | b | c 
+---+---+---
+ 1 | 1 | 1
+(1 row)
+
+SELECT :d1 / :d2 as a, :d1 / 2 as b, 1 / :d2 as c;
+ a | b | c 
+---+---+---
+ 0 | 0 | 0
+(1 row)
+
+SELECT :d2 / :d1 as a, :d2 / 1 as b, 2 / :d1 as c;
+ a | b | c 
+---+---+---
+ 2 | 2 | 2
+(1 row)
+
+SELECT :d1 / :n1 as a, :d1 / -1 as b, 1 / :n1 as c;
+ a  | b  | c  
+----+----+----
+ -1 | -1 | -1
+(1 row)
+
+SELECT :d1 / :n2 as a, :d1 / -2 as b, 1 / :n2 as c;
+ a | b | c 
+---+---+---
+ 0 | 0 | 0
+(1 row)
+
+--
+-- test modulus
+--
+SELECT :d0 % :d0 as a, :d0 / 0 as b, 0 / :d0 as c;
+ a | b | c 
+---+---+---
+   |   | 
+(1 row)
+
+SELECT :d0 % :d1 as a, :d0 % 1 as b, 0 % :d1 as c;
+ a | b | c 
+---+---+---
+ 0 | 0 | 0
+(1 row)
+
+SELECT :d1 % :d1 as a, :d1 % 1 as b, 1 % :d1 as c;
+ a | b | c 
+---+---+---
+ 0 | 0 | 0
+(1 row)
+
+SELECT :d1 % :d2 as a, :d1 % 2 as b, 1 % :d2 as c;
+ a | b | c 
+---+---+---
+ 1 | 1 | 1
+(1 row)
+
+SELECT :d2 % :d1 as a, :d2 % 1 as b, 2 % :d1 as c;
+ a | b | c 
+---+---+---
+ 0 | 0 | 0
+(1 row)
+
+SELECT :d1 % :n1 as a, :d1 % -1 as b, 1 % :n1 as c;
+ a | b | c 
+---+---+---
+ 0 | 0 | 0
+(1 row)
+
+SELECT :d1 % :n2 as a, :d1 % -2 as b, 1 % :n2 as c;
+ a | b | c 
+---+---+---
+ 1 | 1 | 1
+(1 row)
+
+--
+-- test GCD
+--
+SELECT gcd(3::bignum, 12::bignum) as a, gcd(5::bignum, 12::bignum) as b;
+ a | b 
+---+---
+ 3 | 1
+(1 row)
+
+SELECT gcd(3::bignum, 12) as a, gcd(5::bignum, 12) as b;
+ a | b 
+---+---
+ 3 | 1
+(1 row)
+
+SELECT gcd(3, 12::bignum) as a, gcd(5, 12::bignum) as b;
+ a | b 
+---+---
+ 3 | 1
+(1 row)
+
+ROLLBACK;
