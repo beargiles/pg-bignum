@@ -9,6 +9,55 @@
 
 static char * bignum_to_string(BIGNUM *bn);
 
+static BIGNUM * int4_to_bignum(int i) {
+    BIGNUM *bn;
+    int neg = 0;
+    union {
+        int i;
+        const unsigned char c[sizeof(int)];
+    } value;
+
+    value.i = i;
+    if (value.i < 0) {
+        value.i = -value.i;
+        neg = 1;
+    }
+    value.i = htonl(value.i);
+
+    // convert to bignum
+    bn = BN_new();
+    BN_bin2bn(value.c, sizeof(int), bn);
+    BN_set_negative(bn, neg);
+    
+    return bn;
+}
+
+static BIGNUM * int8_to_bignum(long l) {
+    BIGNUM *bn;
+    int neg = 0;
+    union {
+        long l;
+        int i[2];
+        const unsigned char c[sizeof(long)];
+    } value;
+
+    value.l = l;
+    if (value.l < 0) {
+        value.l = -value.l;
+        neg = 1;
+    }
+    value.i[0] = htonl(value.i[0]);
+    value.i[1] = htonl(value.i[1]);
+
+    // convert to bignum
+    bn = BN_new();
+    BN_bin2bn(value.c, sizeof(int), bn);
+    BN_set_negative(bn, neg);
+    
+    return bn;
+}
+
+
 PG_MODULE_MAGIC;
 
 /**
@@ -75,31 +124,9 @@ PG_FUNCTION_INFO_V1(pgx_bignum_from_int4);
 
 Datum pgx_bignum_from_int4(PG_FUNCTION_ARGS) {
     bytea *results;
-    BIGNUM *bn;
-    union {
-        int i;
-        const unsigned char c[sizeof(int)];
-    } value;
-    int neg = 0;
-
-    // check for null input
-    value.i = PG_GETARG_INT32(0);
-    if (value.i < 0) {
-        value.i = -value.i;
-        neg = 1;
-    }
-    value.i = htonl(value.i);
-
-    // convert to bignum
-    bn = BN_new();
-    BN_bin2bn(value.c, sizeof(int), bn);
-    BN_set_negative(bn, neg);
-
-    // write to binary format
+    BIGNUM *bn = int4_to_bignum(PG_GETARG_INT32(0));
     results = bignum_to_bytea(bn);
     BN_free(bn);
-
-    // return bytea
     PG_RETURN_BYTEA_P(results);
 }
 
@@ -110,33 +137,9 @@ PG_FUNCTION_INFO_V1(pgx_bignum_from_int8);
 
 Datum pgx_bignum_from_int8(PG_FUNCTION_ARGS) {
     bytea *results;
-    BIGNUM *bn;
-    union {
-        long l;
-        int i[2];
-        const unsigned char c[sizeof(long)];
-    } value;
-    int neg = 0;
-
-    // check for null input
-    value.l = PG_GETARG_INT64(0);
-    if (value.l < 0) {
-        value.l = -value.l;
-        neg = 1;
-    }
-    value.i[0] = ntohl(value.i[0]);
-    value.i[1] = ntohl(value.i[1]);
-
-    // convert to bignum
-    bn = BN_new();
-    BN_bin2bn(value.c, sizeof(long), bn);
-    BN_set_negative(bn, neg);
-
-    // write to binary format
+    BIGNUM *bn = int8_to_bignum(PG_GETARG_INT64(0));
     results = bignum_to_bytea(bn);
     BN_free(bn);
-
-    // return bytea
     PG_RETURN_BYTEA_P(results);
 }
 
@@ -179,12 +182,6 @@ Datum pgx_bignum_cmp_i8(PG_FUNCTION_ARGS) {
     bytea *raw1;
     BIGNUM *x, *y;
     int r;
-    union {
-        long l;
-        int i[2];
-        const unsigned char c[sizeof(long)];
-    } value;
-    int neg = 0;
 
     // check for null values.
     raw1 = PG_GETARG_BYTEA_P(0);
@@ -192,18 +189,8 @@ Datum pgx_bignum_cmp_i8(PG_FUNCTION_ARGS) {
         PG_RETURN_NULL();
     }
 
-    value.l = PG_GETARG_INT64(1);
-    if (value.l < 0) {
-        value.l = -value.l;
-        neg = 1;
-    }
-    value.i[0] = ntohl(value.i[0]);
-    value.i[1] = ntohl(value.i[1]);
-
+    y = int8_to_bignum(PG_GETARG_INT64(1));
     x = bytea_to_bignum(raw1);
-    y = BN_new();
-    BN_bin2bn(value.c, sizeof(long), y);
-    BN_set_negative(y, neg);
     r = BN_cmp(x, y); 
     
     BN_free(x);
@@ -281,12 +268,6 @@ PG_FUNCTION_INFO_V1(pgx_bignum_add_i8);
 Datum pgx_bignum_add_i8(PG_FUNCTION_ARGS) {
     bytea *raw1, *results;
     BIGNUM *x, *y;
-    union {
-        long l;
-        int i[2];
-        const unsigned char c[sizeof(long)];
-    } value;
-    int neg = 0;
 
     // check for null values.
     raw1 = PG_GETARG_BYTEA_P(0);
@@ -294,18 +275,8 @@ Datum pgx_bignum_add_i8(PG_FUNCTION_ARGS) {
         PG_RETURN_NULL();
     }
 
-    value.l = PG_GETARG_INT64(1);
-    if (value.l < 0) {
-        value.l = -value.l;
-        neg = 1;
-    }
-    value.i[0] = ntohl(value.i[0]);
-    value.i[1] = ntohl(value.i[1]);
-
+    y = int8_to_bignum(PG_GETARG_INT64(1));
     x = bytea_to_bignum(raw1);
-    y = BN_new();
-    BN_bin2bn(value.c, sizeof(long), y);
-    BN_set_negative(y, neg);
     BN_add(x, x, y); 
 
     // write to binary format
@@ -357,12 +328,6 @@ PG_FUNCTION_INFO_V1(pgx_bignum_subtract_i8);
 Datum pgx_bignum_subtract_i8(PG_FUNCTION_ARGS) {
     bytea *raw1, *results;
     BIGNUM *x, *y;
-    union {
-        long l;
-        int i[2];
-        const unsigned char c[sizeof(long)];
-    } value;
-    int neg = 0;
 
     // check for null values.
     raw1 = PG_GETARG_BYTEA_P(0);
@@ -370,18 +335,8 @@ Datum pgx_bignum_subtract_i8(PG_FUNCTION_ARGS) {
         PG_RETURN_NULL();
     }
 
-    value.l = PG_GETARG_INT64(1);
-    if (value.l < 0) {
-        value.l = -value.l;
-        neg = 1;
-    }
-    value.i[0] = ntohl(value.i[0]);
-    value.i[1] = ntohl(value.i[1]);
-
+    y = int8_to_bignum(PG_GETARG_INT64(1));
     x = bytea_to_bignum(raw1);
-    y = BN_new();
-    BN_bin2bn(value.c, sizeof(long), y);
-    BN_set_negative(y, neg);
     BN_sub(x, x, y); 
 
     // write to binary format
@@ -436,12 +391,6 @@ Datum pgx_bignum_multiply_i8(PG_FUNCTION_ARGS) {
     bytea *raw1, *results;
     BIGNUM *x, *y;
     BN_CTX *ctx = BN_CTX_new();
-    union {
-        long l;
-        int i[2];
-        const unsigned char c[sizeof(long)];
-    } value;
-    int neg = 0;
 
     // check for null values.
     raw1 = PG_GETARG_BYTEA_P(0);
@@ -449,18 +398,8 @@ Datum pgx_bignum_multiply_i8(PG_FUNCTION_ARGS) {
         PG_RETURN_NULL();
     }
 
-    value.l = PG_GETARG_INT64(1);
-    if (value.l < 0) {
-        value.l = -value.l;
-        neg = 1;
-    }
-    value.i[0] = ntohl(value.i[0]);
-    value.i[1] = ntohl(value.i[1]);
-
+    y = int8_to_bignum(PG_GETARG_INT64(1));
     x = bytea_to_bignum(raw1);
-    y = BN_new();
-    BN_bin2bn(value.c, sizeof(long), y);
-    BN_set_negative(y, neg);
     BN_mul(x, x, y, ctx); 
 
     // write to binary format
@@ -468,6 +407,304 @@ Datum pgx_bignum_multiply_i8(PG_FUNCTION_ARGS) {
     BN_free(x);
     BN_free(y);
     BN_CTX_free(ctx);
+
+    // return bytea
+    PG_RETURN_BYTEA_P(results);
+}
+
+/*************************************************************************/
+
+/**
+ * Division
+ */
+PG_FUNCTION_INFO_V1(pgx_bignum_divide);
+
+Datum pgx_bignum_divide(PG_FUNCTION_ARGS) {
+    bytea *raw1, *raw2, *results;
+    BIGNUM *x, *y;
+    BN_CTX *ctx = BN_CTX_new();
+
+    // check for null values.
+    raw1 = PG_GETARG_BYTEA_P(0);
+    if (raw1 == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    raw2 = PG_GETARG_BYTEA_P(1);
+    if (raw2 == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    x = bytea_to_bignum(raw1);
+    y = bytea_to_bignum(raw2);
+    BN_div(x, y, x, y, ctx);
+
+    // write to binary format
+    results = bignum_to_bytea(x);
+    BN_free(x);
+    BN_free(y);
+    BN_CTX_free(ctx); 
+
+    // return bytea
+    PG_RETURN_BYTEA_P(results);
+}
+
+PG_FUNCTION_INFO_V1(pgx_bignum_divide_bi8);
+
+Datum pgx_bignum_divide_bi8(PG_FUNCTION_ARGS) {
+    bytea *raw1, *results;
+    BIGNUM *x, *y;
+    BN_CTX *ctx = BN_CTX_new();
+
+    // check for null values.
+    raw1 = PG_GETARG_BYTEA_P(0);
+    if (raw1 == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    y = int8_to_bignum(PG_GETARG_INT64(1));
+    x = bytea_to_bignum(raw1);
+    BN_div(x, y, x, y, ctx); 
+
+    // write to binary format
+    results = bignum_to_bytea(x);
+    BN_free(x);
+    BN_free(y);
+    BN_CTX_free(ctx);
+
+    // return bytea
+    PG_RETURN_BYTEA_P(results);
+}
+
+PG_FUNCTION_INFO_V1(pgx_bignum_divide_i8b);
+
+Datum pgx_bignum_divide_i8b(PG_FUNCTION_ARGS) {
+    bytea *raw1, *results;
+    BIGNUM *x, *y;
+    BN_CTX *ctx = BN_CTX_new();
+
+    x = int8_to_bignum(PG_GETARG_INT64(0));
+
+    // check for null values.
+    raw1 = PG_GETARG_BYTEA_P(1);
+    if (raw1 == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    y = bytea_to_bignum(raw1);
+    BN_div(x, y, x, y, ctx); 
+
+    // write to binary format
+    results = bignum_to_bytea(x);
+    BN_free(x);
+    BN_free(y);
+    BN_CTX_free(ctx);
+
+    // return bytea
+    PG_RETURN_BYTEA_P(results);
+}
+
+/*************************************************************************/
+
+/**
+ * Modulus
+ */
+PG_FUNCTION_INFO_V1(pgx_bignum_modulus);
+
+Datum pgx_bignum_modulus(PG_FUNCTION_ARGS) {
+    bytea *raw1, *raw2, *results;
+    BIGNUM *x, *y;
+    BN_CTX *ctx = BN_CTX_new();
+
+    // check for null values.
+    raw1 = PG_GETARG_BYTEA_P(0);
+    if (raw1 == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    raw2 = PG_GETARG_BYTEA_P(1);
+    if (raw2 == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    x = bytea_to_bignum(raw1);
+    y = bytea_to_bignum(raw2);
+    BN_div(x, y, x, y, ctx);
+
+    // write to binary format
+    results = bignum_to_bytea(y);
+    BN_free(x);
+    BN_free(y);
+    BN_CTX_free(ctx); 
+
+    // return bytea
+    PG_RETURN_BYTEA_P(results);
+}
+
+PG_FUNCTION_INFO_V1(pgx_bignum_modulus_bi8);
+
+Datum pgx_bignum_modulus_bi8(PG_FUNCTION_ARGS) {
+    bytea *raw1, *results;
+    BIGNUM *x, *y;
+    BN_CTX *ctx = BN_CTX_new();
+
+    // check for null values.
+    raw1 = PG_GETARG_BYTEA_P(0);
+    if (raw1 == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    y = int8_to_bignum(PG_GETARG_INT64(1));
+    x = bytea_to_bignum(raw1);
+    BN_div(x, y, x, y, ctx); 
+
+    // write to binary format
+    results = bignum_to_bytea(x);
+    BN_free(x);
+    BN_free(y);
+    BN_CTX_free(ctx);
+
+    // return bytea
+    PG_RETURN_BYTEA_P(results);
+}
+
+PG_FUNCTION_INFO_V1(pgx_bignum_modulus_i8b);
+
+Datum pgx_bignum_modulus_i8b(PG_FUNCTION_ARGS) {
+    bytea *raw1, *results;
+    BIGNUM *x, *y;
+    BN_CTX *ctx = BN_CTX_new();
+
+    x = int8_to_bignum(PG_GETARG_INT64(0));
+
+    // check for null values.
+    raw1 = PG_GETARG_BYTEA_P(1);
+    if (raw1 == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    y = bytea_to_bignum(raw1);
+    BN_div(x, y, x, y, ctx); 
+
+    // write to binary format
+    results = bignum_to_bytea(x);
+    BN_free(x);
+    BN_free(y);
+    BN_CTX_free(ctx);
+
+    // return bytea
+    PG_RETURN_BYTEA_P(results);
+}
+
+/*************************************************************************/
+
+/**
+ * GCD
+ */
+PG_FUNCTION_INFO_V1(pgx_bignum_gcd);
+
+Datum pgx_bignum_gcd(PG_FUNCTION_ARGS) {
+    bytea *raw1, *raw2, *results;
+    BIGNUM *x, *y;
+    BN_CTX *ctx = BN_CTX_new();
+
+    // check for null values.
+    raw1 = PG_GETARG_BYTEA_P(0);
+    if (raw1 == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    raw2 = PG_GETARG_BYTEA_P(1);
+    if (raw2 == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    x = bytea_to_bignum(raw1);
+    y = bytea_to_bignum(raw2);
+    BN_gcd(x, x, y, ctx);
+
+    // write to binary format
+    results = bignum_to_bytea(x);
+    BN_free(x);
+    BN_free(y);
+    BN_CTX_free(ctx); 
+
+    // return bytea
+    PG_RETURN_BYTEA_P(results);
+}
+
+PG_FUNCTION_INFO_V1(pgx_bignum_gcd_i8);
+
+Datum pgx_bignum_gcd_i8(PG_FUNCTION_ARGS) {
+    bytea *raw1, *results;
+    BIGNUM *x, *y;
+    BN_CTX *ctx = BN_CTX_new();
+
+    // check for null values.
+    raw1 = PG_GETARG_BYTEA_P(0);
+    if (raw1 == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    y = int8_to_bignum(PG_GETARG_INT64(1));
+    x = bytea_to_bignum(raw1);
+    BN_gcd(x, x, y, ctx); 
+
+    // write to binary format
+    results = bignum_to_bytea(x);
+    BN_free(x);
+    BN_free(y);
+    BN_CTX_free(ctx);
+
+    // return bytea
+    PG_RETURN_BYTEA_P(results);
+}
+
+PG_FUNCTION_INFO_V1(pgx_bignum_gcd_ii);
+
+Datum pgx_bignum_gcd_ii(PG_FUNCTION_ARGS) {
+    bytea *results;
+    BIGNUM *x, *y;
+    BN_CTX *ctx = BN_CTX_new();
+
+    x = int8_to_bignum(PG_GETARG_INT64(0));
+    y = int8_to_bignum(PG_GETARG_INT64(1));
+    BN_gcd(x, x, y, ctx); 
+
+    // write to binary format
+    results = bignum_to_bytea(x);
+    BN_free(x);
+    BN_free(y);
+    BN_CTX_free(ctx);
+
+    // return bytea
+    PG_RETURN_BYTEA_P(results);
+}
+
+/*************************************************************************/
+
+/**
+ * Absolute value.
+ */
+PG_FUNCTION_INFO_V1(pgx_bignum_abs);
+
+Datum pgx_bignum_abs(PG_FUNCTION_ARGS) {
+    bytea *raw;
+    BIGNUM *bn;
+    bytea *results;
+
+    // check for null values.
+    raw = PG_GETARG_BYTEA_P(0);
+    if (raw == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    bn = bytea_to_bignum(raw);
+    BN_set_negative(bn, 0);
+
+    // write to binary format
+    results = bignum_to_bytea(bn);
+    BN_free(bn);
 
     // return bytea
     PG_RETURN_BYTEA_P(results);

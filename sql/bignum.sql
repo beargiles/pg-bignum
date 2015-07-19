@@ -321,6 +321,46 @@ CREATE OR REPLACE FUNCTION bn_multiply_i8(int8, bignum) RETURNS bignum AS $$
    SELECT bn_multiply_i8($2, $1);
 $$ LANGUAGE SQL IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION bn_divide(bignum, bignum) RETURNS bignum
+AS 'bignum', 'pgx_bignum_divide'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION bn_divide_i8(bignum, int8) RETURNS bignum
+AS 'bignum', 'pgx_bignum_divide_bi8'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION bn_divide_i8(int8, bignum) RETURNS bignum
+AS 'bignum', 'pgx_bignum_divide_i8b'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION bn_modulus(bignum, bignum) RETURNS bignum
+AS 'bignum', 'pgx_bignum_modulus'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION bn_modulus_i8(bignum, int8) RETURNS bignum
+AS 'bignum', 'pgx_bignum_modulus_bi8'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION bn_modulus_i8(int8, bignum) RETURNS bignum
+AS 'bignum', 'pgx_bignum_modulus_i8b'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION bn_gcd(bignum, bignum) RETURNS bignum
+AS 'bignum', 'pgx_bignum_gcd'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION bn_gcd_i8(bignum, int8) RETURNS bignum
+AS 'bignum', 'pgx_bignum_gcd_i8'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION bn_gcd_i8(int8, bignum) RETURNS bignum AS $$
+   SELECT bn_gcd_i8($2, $1);
+$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION bn_gcd_ii(int8, int8) RETURNS bignum
+AS 'bignum', 'pgx_bignum_gcd_ii'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE OPERATOR + (
    LEFTARG = bignum,
    RIGHTARG = bignum,
@@ -380,3 +420,78 @@ CREATE OPERATOR * (
    PROCEDURE = bn_multiply_i8,
    COMMUTATOR = *
 );
+
+CREATE OPERATOR / (
+   LEFTARG = bignum,
+   RIGHTARG = bignum,
+   PROCEDURE = bn_divide
+);
+
+CREATE OPERATOR / (
+   LEFTARG = bignum,
+   RIGHTARG = int8,
+   PROCEDURE = bn_divide_i8
+);
+
+CREATE OPERATOR / (
+   LEFTARG = int8,
+   RIGHTARG = bignum,
+   PROCEDURE = bn_divide_i8
+);
+
+CREATE OPERATOR % (
+   LEFTARG = bignum,
+   RIGHTARG = bignum,
+   PROCEDURE = bn_modulus
+);
+
+CREATE OPERATOR % (
+   LEFTARG = bignum,
+   RIGHTARG = int8,
+   PROCEDURE = bn_modulus_i8
+);
+
+CREATE OPERATOR % (
+   LEFTARG = int8,
+   RIGHTARG = bignum,
+   PROCEDURE = bn_modulus_i8
+);
+
+CREATE OPERATOR | (
+   LEFTARG = bignum,
+   RIGHTARG = bignum,
+   PROCEDURE = bn_gcd
+);
+
+CREATE OPERATOR | (
+   LEFTARG = bignum,
+   RIGHTARG = int8,
+   PROCEDURE = bn_gcd_i8
+);
+
+CREATE OPERATOR | (
+   LEFTARG = int8,
+   RIGHTARG = bignum,
+   PROCEDURE = bn_gcd_i8
+);
+
+CREATE OPERATOR | (
+   LEFTARG = int8,
+   RIGHTARG = int8,
+   PROCEDURE = bn_gcd_ii
+);
+
+CREATE OR REPLACE FUNCTION bn_abs(bignum) RETURNS bool
+AS 'bignum', 'pgx_bignum_abs'
+LANGUAGE C IMMUTABLE STRICT;
+
+--
+-- primes...
+--
+--CREATE FUNCTION bn_gen_prime(int, int) RETURNS BIGNUM
+--AS 'bignum', 'pgx_bignum_gen_prime'
+--LANGUAGE C IMMUTABLE STRICT;
+
+--CREATE FUNCTION bn_is_prime(bignum, int) RETURNS bool
+--AS 'bignum', 'pgx_bignum_is_prime'
+--LANGUAGE C IMMUTABLE STRICT;
