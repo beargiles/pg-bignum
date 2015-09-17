@@ -83,9 +83,9 @@ Datum pgx_bignum_in(PG_FUNCTION_ARGS) {
 
     // convert to bignum
     bn = BN_new();
-    len = BN_dec2bn(&bn, txt);
+    len = BN_asc2bn(&bn, txt);
 
-    if (strlen(txt) != len) {
+    if (!len) {
         elog(ERROR, "length mismatch - non-numeric values?");
         PG_RETURN_NULL();
     }
