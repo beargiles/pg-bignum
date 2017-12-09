@@ -15,6 +15,7 @@ BIGNUM * bytea_to_bignum(bytea *raw);
 bytea * bignum_to_bytea(BIGNUM *bn);
 
 // big numbers
+Datum pgx_bignum_in_asc(PG_FUNCTION_ARGS);
 Datum pgx_bignum_in_hex(PG_FUNCTION_ARGS);
 Datum pgx_bignum_in_dec(PG_FUNCTION_ARGS);
 Datum pgx_bignum_out(PG_FUNCTION_ARGS);

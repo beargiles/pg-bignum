@@ -40,8 +40,13 @@ RETURNS CSTRING
 AS 'bignum', 'pgx_bignum_out'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION bn_in(cstring)
+RETURNS bignum
+AS 'bignum', 'pgx_bignum_in_asc'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE TYPE bignum (
-    INPUT   = bn_in_dec,
+    INPUT   = bn_in,
     OUTPUT  = bn_out
 );
 
