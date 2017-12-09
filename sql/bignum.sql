@@ -25,9 +25,14 @@
 --
 CREATE TYPE bignum;
 
-CREATE OR REPLACE FUNCTION bn_in(cstring)
+CREATE OR REPLACE FUNCTION bn_in_dec(cstring)
 RETURNS bignum
-AS 'bignum', 'pgx_bignum_in'
+AS 'bignum', 'pgx_bignum_in_dec'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION bn_in_hex(cstring)
+RETURNS bignum
+AS 'bignum', 'pgx_bignum_in_hex'
 LANGUAGE C IMMUTABLE STRICT;
 
 CREATE OR REPLACE FUNCTION bn_out(bignum)
@@ -36,7 +41,7 @@ AS 'bignum', 'pgx_bignum_out'
 LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE bignum (
-    INPUT   = bn_in,
+    INPUT   = bn_in_dec,
     OUTPUT  = bn_out
 );
 

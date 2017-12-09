@@ -67,9 +67,9 @@ PG_MODULE_MAGIC;
 /**
  * Read from cstring
  */
-PG_FUNCTION_INFO_V1(pgx_bignum_in);
+PG_FUNCTION_INFO_V1(pgx_bignum_in_dec);
 
-Datum pgx_bignum_in(PG_FUNCTION_ARGS) {
+Datum pgx_bignum_in_dec(PG_FUNCTION_ARGS) {
     char *txt;
     int len;
     bytea *results;
@@ -77,7 +77,7 @@ Datum pgx_bignum_in(PG_FUNCTION_ARGS) {
 
     // check for null input
     txt = PG_GETARG_CSTRING(0);
-    if (txt == NULL || strlen(txt) == 0) {
+    if (strlen(txt) == 0) {
         PG_RETURN_NULL();
     }
 
@@ -87,8 +87,34 @@ Datum pgx_bignum_in(PG_FUNCTION_ARGS) {
 
     if (strlen(txt) != len) {
         elog(ERROR, "length mismatch - non-numeric values?");
+        BN_free(bn);
         PG_RETURN_NULL();
     }
+
+    // write to binary format
+    results = bignum_to_bytea(bn);
+    BN_free(bn);
+
+    // return bytea
+    PG_RETURN_BYTEA_P(results);
+}
+
+PG_FUNCTION_INFO_V1(pgx_bignum_in_hex);
+
+Datum pgx_bignum_in_hex(PG_FUNCTION_ARGS) {
+    char *txt;
+    bytea *results;
+    BIGNUM *bn;
+
+    // check for null input
+    txt = PG_GETARG_CSTRING(0);
+    if (strlen(txt) == 0) {
+        PG_RETURN_NULL();
+    }
+
+    // convert to bignum
+    bn = BN_new();
+    BN_hex2bn(&bn, txt);
 
     // write to binary format
     results = bignum_to_bytea(bn);
