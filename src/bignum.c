@@ -12,6 +12,7 @@
 #include "bignum.h"
 
 static char * bignum_to_string(BIGNUM *bn);
+static char * bignum_to_string_hex(BIGNUM *bn);
 
 static BIGNUM * int4_to_bignum(int i) {
     BIGNUM *bn;
@@ -173,6 +174,26 @@ Datum pgx_bignum_out(PG_FUNCTION_ARGS) {
 
     PG_RETURN_CSTRING(results);
 }
+
+PG_FUNCTION_INFO_V1(pgx_bignum_out_hex);
+Datum pgx_bignum_out_hex(PG_FUNCTION_ARGS) {
+    bytea *raw;
+    char *results;
+    BIGNUM *bn;
+
+    // check for null value.
+    raw = PG_GETARG_BYTEA_P(0);
+    if (raw == NULL) {
+        PG_RETURN_NULL();
+    }
+
+    bn = bytea_to_bignum(raw);
+    results = bignum_to_string_hex(bn);
+    BN_free(bn);
+
+    PG_RETURN_CSTRING(results);
+}
+
 
 /**
  * Read from int4
@@ -868,6 +889,26 @@ static char * bignum_to_string(BIGNUM *bn) {
 
     return results;
 }
+
+static char * bignum_to_string_hex(BIGNUM *bn) {
+    char *ptr, *results;
+    int len;
+
+    // convert bignum to decimal
+    ptr = BN_bn2hex(bn);
+
+    // create bytea results.
+    len = strlen(ptr);
+    results = palloc (1 + len);
+    strncpy(results, ptr, len);
+    results[len] = '\0';
+
+    // release memory
+    OPENSSL_free(ptr);
+
+    return results;
+}
+
 
 /**
  * Convert BIGNUM to Datum (for return in records).
