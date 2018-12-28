@@ -40,6 +40,10 @@ RETURNS CSTRING
 AS 'bignum', 'pgx_bignum_out'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION bn_out_hex(bignum)
+RETURNS CSTRING AS 'bignum', 'pgx_bignum_out_hex'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE OR REPLACE FUNCTION bn_in(cstring)
 RETURNS bignum
 AS 'bignum', 'pgx_bignum_in_asc'
